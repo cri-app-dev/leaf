@@ -181,7 +181,9 @@ class Attestation extends React.PureComponent<Props, State> {
                         sessionType={attestation.sessionType} />)
                     ]}
                 </ModalBody>
+                {/*
                 <AttestationFooter />
+                */}
             </Modal>
         );
     }
