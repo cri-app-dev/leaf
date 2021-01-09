@@ -89,16 +89,15 @@ export default class AttestationConfirmation extends React.PureComponent<Props> 
                                 non-compliance.
                             </li>
                         </ol>
-                        
-                        <h5 className="text-center">System User Acknowledgement</h5>
-                        I am authorized to view the data described in the Agreement
-                        for the purposes described in the Agreement. By accepting this document, I acknowledge and agree
-                        to abide by the restrictions on the use and disclosure of the data viewed in accordance with the
-                        Agreement.
+                        <h5 className="text-center">System User Acknowledgement</h5>I am authorized to view the data
+                        described in the Agreement for the purposes described in the Agreement. By accepting this
+                        document, I acknowledge and agree to abide by the restrictions on the use and disclosure of the
+                        data viewed in accordance with the Agreement.
                     </p>,
                 ]}
                 {!(isSubmittingAttestation || hasAttested) && (
                     <div className={`${c}-confirmation-footer`}>
+                        {/*
                         <Button onClick={handleGoBackClick} tabIndex={-1} className="leaf-button mr-auto">
                             Go Back
                         </Button>
@@ -107,6 +106,14 @@ export default class AttestationConfirmation extends React.PureComponent<Props> 
                             tabIndex={-1}
                             className="leaf-button leaf-button-primary"
                             style={{ float: "right" }}
+                        >
+                            I Agree
+                        </Button>
+                        */}
+                        <Button
+                            onClick={handleIAgreeClick}
+                            tabIndex={-1}
+                            className="leaf-button leaf-button-primary"
                         >
                             I Agree
                         </Button>
