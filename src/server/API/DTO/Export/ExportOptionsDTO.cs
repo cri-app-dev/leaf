@@ -10,10 +10,12 @@ namespace API.DTO.Export
 {
     public class ExportOptionsDTO
     {
+        public CSVExportOptionsDTO CSV { get; set; }
         public REDCapExportOptionsDTO REDCap { get; set; }
 
         public ExportOptionsDTO(ExportOptions exportOptions)
         {
+            CSV = new CSVExportOptionsDTO(exportOptions.CSV);
             REDCap = new REDCapExportOptionsDTO(exportOptions.REDCap);
         }
 
@@ -23,6 +25,7 @@ namespace API.DTO.Export
             public string Scope { get; set; }
             public int BatchSize { get; set; }
             public int RowLimit { get; set; }
+            public bool IncludeScopeInUsername { get; set; }
             public bool Enabled { get; set; }
 
             public REDCapExportOptionsDTO(REDCapExportOptions redcapOptions)
@@ -30,8 +33,19 @@ namespace API.DTO.Export
                 ApiURI = redcapOptions.ApiURI;
                 Scope = redcapOptions.Scope;
                 BatchSize = redcapOptions.BatchSize;
+                IncludeScopeInUsername = redcapOptions.IncludeScopeInUsername;
                 RowLimit = redcapOptions.RowLimit;
                 Enabled = redcapOptions.Enabled;
+            }
+        }
+
+        public class CSVExportOptionsDTO
+        {
+            public bool Enabled { get; set; }
+
+            public CSVExportOptionsDTO(CSVExportOptions csvOptions)
+            {
+                Enabled = csvOptions.Enabled;
             }
         }
     }

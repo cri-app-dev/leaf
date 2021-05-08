@@ -32,6 +32,7 @@ interface AttestationOptionsDTO {
 interface CohortConfigDTO {
     cacheLimit: number;
     exportLimit: number;
+    deidentificationEnabled: boolean;
 }
 
 export interface AppConfig extends ConfigDTO { }
@@ -39,6 +40,7 @@ export interface AppConfig extends ConfigDTO { }
 export interface ClientOptions {
     map: MapOptions;
     visualize: VisualizeOptions;
+    timelines: TimelinesOptions;
     patientList: PatientListOptions;
     help: HelpOptions;
 }
@@ -46,6 +48,10 @@ export interface ClientOptions {
 interface MapOptions {
     enabled: boolean;
     tileURI: string;
+}
+
+interface TimelinesOptions {
+    enabled: boolean;
 }
 
 interface VisualizeOptions {

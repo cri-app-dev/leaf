@@ -43,8 +43,9 @@ namespace API
                                     .RequireAuthenticatedUser()
                                     .Build();
                     config.Filters.Add(new AuthorizeFilter(policy));
+                    config.EnableEndpointRouting = false;
                 })
-                .AddJsonOptions(settings =>
+                .AddNewtonsoftJson(settings =>
                 {
                     settings.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                     settings.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
@@ -68,7 +69,7 @@ namespace API
             {
                 builder.WithOrigins("*");
                 builder.WithHeaders("Accept", "Content-Type", "Origin", "Authorization");
-                builder.WithMethods("POST", "GET", "OPTIONS");
+                builder.WithMethods("POST", "GET", "OPTIONS", "PUT", "DELETE");
             });
 
             app.UseAuthentication();

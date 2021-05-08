@@ -5,11 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */ 
 
-import { EXPORT_CLEAR_ERROR_OR_COMPLETE,  EXPORT_COMPLETE, EXPORT_ERROR, EXPORT_SET_OPTIONS, EXPORT_SET_PROGRESS, ExportAction, } from '../actions/dataExport';
+import { EXPORT_CLEAR_ERROR_OR_COMPLETE, EXPORT_REDCAP_COMPLETE, EXPORT_COMPLETE, EXPORT_ERROR, EXPORT_SET_OPTIONS, EXPORT_SET_PROGRESS, ExportAction, } from '../actions/dataExport';
 import ExportState from '../models/state/Export';
 
 export function defaultExportState(): ExportState {
     return {
+        enabled: false,
         isComplete: false,
         isErrored: false,
         isExporting: false,
@@ -17,6 +18,9 @@ export function defaultExportState(): ExportState {
             completed: 0,
             estimatedSecondsRemaining: 0,
             text: ''
+        },
+        csv: {
+            enabled: false
         },
         redCap: {
             enabled: false
@@ -27,6 +31,10 @@ export function defaultExportState(): ExportState {
 export const dataExport = (state: ExportState = defaultExportState(), action: ExportAction): ExportState => {
     switch (action.type) {
         case EXPORT_COMPLETE:
+            return Object.assign({}, state, {
+                isComplete: true
+            }); 
+        case EXPORT_REDCAP_COMPLETE:
             return Object.assign({}, state, {
                 isComplete: true,
                 redCap: {
@@ -42,6 +50,8 @@ export const dataExport = (state: ExportState = defaultExportState(), action: Ex
             });
         case EXPORT_SET_OPTIONS:
             return Object.assign({}, state, {
+                enabled: (action.exportOptions!.redCap.enabled || action.exportOptions!.csv.enabled),
+                csv: action.exportOptions!.csv,
                 redCap: action.exportOptions!.redCap
             });
         case EXPORT_SET_PROGRESS:

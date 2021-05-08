@@ -168,7 +168,7 @@ export default class PatientListWebWorker {
     }
 
     private workerContext = () => {
-        let patientMap = new Map<string, Patient>();
+        let patientMap = new Map<PatientId, Patient>();
         let singletonDatasets = new Map<PatientListDatasetId, PatientListDatasetDefinition>();
         let multirowDatasets = new Map<PatientListDatasetId, PatientListDatasetDefinition>();
         let defaultPatientOrder: PatientId[] = [];
@@ -277,7 +277,7 @@ export default class PatientListWebWorker {
             // For each row
             for (let i = 0; i < uniquePatients.length; i++) {
                 const p = uniquePatients![i];
-                const row = data[p][0];
+                const row = data[p][0] as any;
                 const compoundId = `${responderId}_${p}`;
                 const pat = patientMap.get(compoundId);
                 if (!pat) { continue; }
@@ -324,7 +324,7 @@ export default class PatientListWebWorker {
 
                 // Convert strings to dates
                 for (let j = 0; j < rows.length; j++) {
-                    const row = rows[j];
+                    const row = rows[j] as any;
                     for (let k = 0; k < dateFields.length; k++) {
                         const f = dateFields[k].id;
                         const v = row[f];
@@ -577,7 +577,7 @@ export default class PatientListWebWorker {
          * Define a derivedNumericColumns template for
          * storing summarized stats from numeric datasets.
          */
-        const getDerivedNumericColumnsTemplate = () => {
+        const getDerivedNumericColumnsTemplate = (): any => {
             return {
                 trend: { id: 'Trend', isDisplayed: true, type: typeSparkline },
                 count: { id: 'Count', isDisplayed: true, type: typeNum },
@@ -678,7 +678,7 @@ export default class PatientListWebWorker {
                 // Make sure we have data to work with
                 if (!data) { continue; }
 
-                const vals: XY[] = data.map((d: PatientListRowDTO) => ({ x: d[def.dateValueColumn!], y: d[def.numericValueColumn!] }))
+                const vals: XY[] = data.map((d: PatientListRowDTO) => ({ x: d[def.dateValueColumn!], y: d[def.numericValueColumn!] })) as any;
                 const numVals: XY[] = vals.filter((d: XY) => +d.y).sort((a: XY, b: XY) => a.y - b.y);
 
                 // Compute earliest and latest
@@ -722,7 +722,7 @@ export default class PatientListWebWorker {
          * a given non-numeric dataset definition.
          */
         const getNonNumericSummaryDatasetColums = (def: PatientListDatasetDefinition): DerivedColumnLookup => {
-            const cols = getDerivedNonNumericColumnsTemplate();
+            const cols = getDerivedNonNumericColumnsTemplate() as any;
             Array.from(Object.keys(cols)).forEach((k: string, i: number) => {
                 const col = cols[k];
                 col.index = i;
@@ -777,7 +777,7 @@ export default class PatientListWebWorker {
                 // Make sure we have data to work with
                 if (!data) { continue; }
 
-                const vals: XY[] = data.map((d: PatientListRowDTO) => ({ x: d[def.dateValueColumn!], y: d[def.stringValueColumn!] }));
+                const vals: XY[] = data.map((d: PatientListRowDTO) => ({ x: d[def.dateValueColumn!], y: d[def.stringValueColumn!] })) as any;
 
                 // Compute earliest and latest
                 const firstDate = vals[0].x;
@@ -803,7 +803,7 @@ export default class PatientListWebWorker {
         const valueToCsvString = (d: any) => {
             return (
                 !d ? '' 
-               : d instanceof Date ? d.toLocaleString().replace(',','') 
+               : d instanceof Date ? d.toISOString().replace(',','') 
                : String(d)
                     .replace(/(\r\n|\n|\r|\s+|\t|&nbsp;)/gm,' ')
                     .replace(/"/g, '""')
@@ -861,7 +861,7 @@ export default class PatientListWebWorker {
                     let rowCount = 0;
                     if (ds) {
                         for (let i = 0; i < ds.length; i++) {
-                            const row: any[] = [];
+                            const row = [] as any;
                             const vals: any = ds[i];
                             for (let j = 0; j < mdsCols.length; j++) {
                                 const d = vals[mdsCols[j].id];
@@ -888,7 +888,7 @@ export default class PatientListWebWorker {
          */
         const getMultirowDataCsv = (payload: InboundMessagePayload): OutboundMessagePayload => {
             const { datasetId, requestId } = payload;
-            const nl = '\r\n';
+            const nl = '\n';
             const rows: string[] =[];
             const cols: PatientListColumn[] = [ { id: personId, datasetId: datasetId!, index: 0, isDisplayed: true, type: typeString } ];
             multirowDatasets.get(datasetId!)!.columns.forEach((col: PatientListColumn) => cols.push(col));
@@ -904,8 +904,14 @@ export default class PatientListWebWorker {
                         const row: any[] = [];
                         const vals: any = ds[i];
                         for (let j = 0; j < cols.length; j++) {
-                            const d = vals[cols[j].id];
-                            row.push(`"${valueToCsvString(d)}"`);
+                            // Multirow datasets store uppercase 'PersonId', from server
+                            if (cols[j].id === personId) { 
+                                row.push(`"${valueToCsvString(vals['PersonId'])}"`);
+                            // else lookup value
+                            } else {
+                                const d = vals[cols[j].id];  
+                                row.push(`"${valueToCsvString(d)}"`);
+                            }
                         }
                         rows.push(row.join(','));
                     }
@@ -921,7 +927,7 @@ export default class PatientListWebWorker {
          */
         const getSingletonDataCsv = (payload: InboundMessagePayload): OutboundMessagePayload => {
             const { config, requestId, useDisplayedColumnsOnly } = payload;
-            const nl = '\r\n';
+            const nl = '\n';
             const rows: string[] =[];
             let cols: PatientListColumn[] = [];
 

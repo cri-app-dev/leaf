@@ -5,12 +5,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */ 
 
+export interface CSVExportOptionsDTO {
+    enabled: boolean;
+}
+
+export interface CSVExportOptions extends CSVExportOptionsDTO {}
+
 export interface REDCapExportOptionsDTO {
     apiURI?: string;
     batchSize?: number;
     enabled: boolean;
     rowLimit?: number;
     scope?: string;
+    includeScopeInUsername?: boolean;
 }
 
 export interface REDCapExportOptions extends REDCapExportOptionsDTO {
@@ -24,13 +31,16 @@ export interface ExportProgress {
 }
 
 export interface ExportOptionsDTO {
+    csv: CSVExportOptions;
     redCap: REDCapExportOptions;
 }
 
 export default interface ExportState {
+    enabled: boolean;
     isComplete: boolean;
     isErrored: boolean;
     isExporting: boolean;
-    progress: ExportProgress; 
+    progress: ExportProgress;
+    csv: CSVExportOptions;
     redCap: REDCapExportOptions;
 }

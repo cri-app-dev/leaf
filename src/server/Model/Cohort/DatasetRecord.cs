@@ -54,6 +54,23 @@ namespace Model.Cohort
         }
     }
 
+    public class ConceptDatasetRecord : ConceptDataset, ISalt
+    {
+        [Field(Name = DatasetColumns.Salt, Type = LeafType.Guid, Required = true)]
+        public Guid Salt { get; set; }
+
+        public ConceptDataset ToConceptDataset()
+        {
+            return new ConceptDataset
+            {
+                PersonId = PersonId,
+                EncounterId = EncounterId,
+                DateField = DateField,
+                NumberField = NumberField
+            };
+        }
+    }
+
     public class MedicationAdministrationDatasetRecord : MedicationAdministration, ISalt
     {
         [Field(Name = DatasetColumns.Salt, Type = LeafType.Guid, Required = true)]
@@ -269,7 +286,7 @@ namespace Model.Cohort
                 IsHispanic = IsHispanic,
                 IsDeceased = IsDeceased,
                 BirthDate = BirthDate,
-                DeathDate = DeathDate,
+                DeceasedDateTime = DeceasedDateTime,
                 Name = Name.ValueElseUnknown(),
                 Mrn = Mrn.ValueElseUnknown()
             };

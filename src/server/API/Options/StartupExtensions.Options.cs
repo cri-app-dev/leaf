@@ -63,7 +63,7 @@ namespace API.Options
             });
 
             // Cohort Caching Options
-            services.Configure<CohortOptions>(configuration.GetSection(Config.Cohort.Section));
+            services.ConfigureCohortOptions(configuration);
 
             // Jwt Options
             services.ConfigureJwtOptions(configuration);
@@ -168,6 +168,7 @@ namespace API.Options
 
         static IServiceCollection ConfigureExportOptions(this IServiceCollection services, IConfiguration config)
         {
+            var csv = new CSVExportOptions { Enabled = config.GetValue<bool>(Config.Export.CSV.Enabled) };
             var rc = new REDCapExportOptions { Enabled = config.GetValue<bool>(Config.Export.REDCap.Enabled) };
             if (rc.Enabled)
             {
@@ -176,6 +177,7 @@ namespace API.Options
                 rc.RowLimit = config.GetValue<int>(Config.Export.REDCap.RowLimit);
                 rc.Scope = config.GetValue<string>(Config.Export.REDCap.Scope);
                 rc.SuperToken = config.GetByProxy(Config.Export.REDCap.SuperToken);
+                rc.IncludeScopeInUsername = config.GetValue<bool>(Config.Export.REDCap.IncludeScopeInUsername);
             }
 
             services.Configure<REDCapExportOptions>(opts =>
@@ -190,6 +192,7 @@ namespace API.Options
 
             services.Configure<ExportOptions>(opts =>
             {
+                opts.CSV = csv;
                 opts.REDCap = rc;
             });
 
@@ -238,6 +241,9 @@ namespace API.Options
                         opts.Visualize.ShowFederated = showFed;
                     }
                 }
+
+                // Timelines
+                opts.Timelines.Enabled = config.GetValue<bool>(Config.Client.Timelines.Enabled);
 
                 // Patient List
                 opts.PatientList.Enabled = config.GetValue<bool>(Config.Client.PatientList.Enabled);
@@ -344,6 +350,23 @@ namespace API.Options
             return services;
         }
 
+        static IServiceCollection ConfigureCohortOptions(this IServiceCollection services, IConfiguration config)
+        {
+            var cohortOpts = new CohortOptions
+            {
+                RowLimit = config.GetValue<int>(Config.Cohort.RowLimit),
+                ExportLimit = config.GetValue<int>(Config.Cohort.ExportLimit)
+            };
+
+            services.Configure<CohortOptions>(opts =>
+            {
+                opts.RowLimit = cohortOpts.RowLimit;
+                opts.ExportLimit = cohortOpts.ExportLimit;
+            });
+
+            return services;
+        }
+
         static IServiceCollection ConfigureRuntimeOptions(this IServiceCollection services, IConfiguration config)
         {
             var rt = new RuntimeOptions().WithRuntime(config.GetValue<string>(Config.Runtime.Mode));
@@ -370,10 +393,29 @@ namespace API.Options
             {
                 opts.ConnectionString = config.GetByProxy(Config.Db.Clin.Connection);
                 opts.DefaultTimeout = config.GetValue<int>(Config.Db.Clin.DefaultTimeout);
+                opts.Cohort.WithQueryStrategy(config.GetValue<string>(Config.Db.Clin.Cohort.QueryStrategy));
+
+                if (opts.Cohort.QueryStrategy == ClinDbOptions.ClinDbCohortOptions.QueryStrategyOptions.Parallel)
+                {
+                    if (!config.TryGetValue<int>(Config.Db.Clin.Cohort.MaxParallelThreads, out var maxThreads))
+                    {
+                        opts.Cohort.MaxParallelThreads = 5;
+                    }
+                    else
+                    {
+                        opts.Cohort.MaxParallelThreads = maxThreads;
+                    }
+
+                    if (opts.Cohort.MaxParallelThreads <= 0)
+                    {
+                        throw new LeafConfigurationException($"ClinDb Cohort MaxParallelThreads must be greater than zero, but is set to {maxThreads}");
+                    }
+                }
             });
 
             var extractor = new DatabaseExtractor();
             var sp = services.BuildServiceProvider();
+
             // SQL Compiler Options
             config.TryBind<CompilerOptions>(Config.Compiler.Section, out var compilerOptions);
             services.Configure<CompilerOptions>(opts =>

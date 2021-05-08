@@ -27,19 +27,22 @@ namespace API.Controllers
         readonly CohortOptions cohortOptions;
         readonly ClientOptions clientOptions;
         readonly AttestationOptions attestationOptions;
+        readonly DeidentificationOptions deidentOptions;
 
         public ConfigController(
             IOptions<AuthenticationOptions> authenticationOptions,
             IOptions<LeafVersionOptions> versionOptions,
             IOptions<CohortOptions> cohortOptions,
             IOptions<ClientOptions> clientOptions,
-            IOptions<AttestationOptions> attestationOptions)
+            IOptions<AttestationOptions> attestationOptions,
+            IOptions<DeidentificationOptions> deidentOptions)
         {
             this.authenticationOptions = authenticationOptions.Value;
             this.versionOptions = versionOptions.Value;
             this.cohortOptions = cohortOptions.Value;
             this.clientOptions = clientOptions.Value;
             this.attestationOptions = attestationOptions.Value;
+            this.deidentOptions = deidentOptions.Value;
         }
 
         public ActionResult<ConfigDTO> Get()
@@ -59,9 +62,37 @@ namespace API.Controllers
                 Cohort = new CohortConfigDTO
                 {
                     CacheLimit = cohortOptions.RowLimit,
-                    ExportLimit = cohortOptions.ExportLimit
+                    ExportLimit = cohortOptions.ExportLimit,
+                    DeidentificationEnabled = deidentOptions.Patient.Enabled
                 },
-                Client = clientOptions,
+                Client = new ClientOptionsDTO
+                {
+                    Map = new ClientOptionsDTO.MapOptionsDTO
+                    {
+                        Enabled = clientOptions.Map.Enabled,
+                        TileURI = clientOptions.Map.TileURI
+                    },
+                    Visualize = new ClientOptionsDTO.VisualizeOptionsDTO
+                    {
+                        Enabled = clientOptions.Visualize.Enabled,
+                        ShowFederated = clientOptions.Visualize.ShowFederated
+                    },
+                    Timelines = new ClientOptionsDTO.TimelinesOptionsDTO
+                    {
+                        Enabled = clientOptions.Timelines.Enabled
+                    },
+                    PatientList = new ClientOptionsDTO.PatientListOptionsDTO
+                    {
+                        Enabled = clientOptions.PatientList.Enabled
+                    },
+                    Help = new ClientOptionsDTO.HelpOptionsDTO
+                    {
+                        Enabled = clientOptions.Help.Enabled,
+                        AutoSend = clientOptions.Help.AutoSend,
+                        Email = clientOptions.Help.Email,
+                        URI = clientOptions.Help.URI
+                    }
+                },
                 Version = versionOptions.Version.ToString()
             };
 
