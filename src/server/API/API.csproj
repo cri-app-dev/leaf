@@ -1,12 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-<<<<<<< HEAD
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
-=======
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <!-- <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch> -->
->>>>>>> 38d9c58bec87c65d54ec7ea0ababd20b3ef38737
     <TieredCompilation>true</TieredCompilation>
     <ReleaseVersion>3.1</ReleaseVersion>
   </PropertyGroup>
